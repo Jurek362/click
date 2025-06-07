@@ -1,0 +1,618 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Ultimate Clicker Game!</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            --secondary-gradient: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            --success-gradient: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            --glow-color: rgba(102, 126, 234, 0.4);
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #0c0c0c 0%, #1a1a2e 50%, #16213e 100%);
+            color: #ffffff;
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+            overflow-x: hidden;
+            position: relative;
+            display: flex; /* Added for centering content with min-h-screen */
+            justify-content: center; /* Added for centering content with min-h-screen */
+            align-items: center; /* Added for centering content with min-h-screen */
+        }
+
+        /* Animated background particles */
+        .bg-particles {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .particle {
+            position: absolute;
+            background: rgba(102, 126, 234, 0.3);
+            border-radius: 50%;
+            animation: float 6s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0px) rotate(0deg); opacity: 0.7; }
+            50% { transform: translateY(-20px) rotate(180deg); opacity: 1; }
+        }
+
+        /* Main container */
+        .game-container {
+            position: relative;
+            z-index: 10;
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 30px;
+            padding: 40px;
+            margin: 20px auto;
+            width: 90%;
+            max-width: 600px;
+            box-shadow: 
+                0 25px 50px rgba(0, 0, 0, 0.3),
+                inset 0 1px 0 rgba(255, 255, 255, 0.1);
+            text-align: center;
+            animation: containerGlow 3s ease-in-out infinite alternate;
+        }
+
+        @keyframes containerGlow {
+            0% { box-shadow: 0 25px 50px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.1), 0 0 30px var(--glow-color); }
+            100% { box-shadow: 0 25px 50px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.1), 0 0 60px var(--glow-color); }
+        }
+
+        /* Title styling */
+        .title {
+            background: linear-gradient(45deg, #fff, #667eea, #764ba2);
+            background-size: 200% 200%;
+            background-clip: text;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            animation: titleShimmer 3s ease-in-out infinite;
+            font-weight: 900;
+            letter-spacing: -0.02em;
+        }
+
+        @keyframes titleShimmer {
+            0%, 100% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+        }
+
+        /* Click counter styling */
+        .click-counter {
+            font-size: clamp(3rem, 8vw, 5rem);
+            font-weight: 900;
+            background: linear-gradient(45deg, #ffd700, #ffed4a, #f6ad55);
+            background-size: 200% 200%;
+            background-clip: text;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            animation: counterShimmer 2s ease-in-out infinite;
+            text-shadow: 0 0 30px rgba(255, 215, 0, 0.5);
+            transition: all 0.3s ease;
+        }
+
+        @keyframes counterShimmer {
+            0%, 100% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+        }
+
+        .click-counter.animate {
+            transform: scale(1.1);
+            filter: drop-shadow(0 0 20px rgba(255, 215, 0, 0.8));
+        }
+
+        /* Enhanced click button */
+        .click-button {
+            position: relative;
+            background: var(--primary-gradient);
+            border: none;
+            border-radius: 25px;
+            padding: 20px 50px;
+            font-size: clamp(1.5rem, 4vw, 2.5rem);
+            font-weight: 800;
+            color: white;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 
+                0 10px 30px rgba(102, 126, 234, 0.4),
+                inset 0 1px 0 rgba(255, 255, 255, 0.2);
+            overflow: hidden;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+        }
+
+        .click-button::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+            transition: left 0.5s;
+        }
+
+        .click-button:hover::before {
+            left: 100%;
+        }
+
+        .click-button:hover {
+            transform: translateY(-5px) scale(1.05);
+            box-shadow: 
+                0 20px 40px rgba(102, 126, 234, 0.6),
+                inset 0 1px 0 rgba(255, 255, 255, 0.3);
+        }
+
+        .click-button:active {
+            transform: translateY(-2px) scale(1.02);
+            box-shadow: 
+                0 5px 15px rgba(102, 126, 234, 0.8),
+                inset 0 1px 0 rgba(255, 255, 255, 0.2);
+        }
+
+        .click-button.completed {
+            background: var(--success-gradient);
+            animation: completedPulse 1.5s ease-in-out infinite;
+        }
+
+        @keyframes completedPulse {
+            0%, 100% { 
+                transform: scale(1);
+                box-shadow: 0 10px 30px rgba(79, 172, 254, 0.4);
+            }
+            50% { 
+                transform: scale(1.05);
+                box-shadow: 
+                    0 20px 40px rgba(79, 172, 254, 0.8),
+                    0 0 50px rgba(0, 242, 254, 0.3);
+            }
+        }
+
+        /* Enhanced progress bar */
+        .progress-container {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            height: 30px;
+            padding: 3px;
+            box-shadow: inset 0 2px 10px rgba(0, 0, 0, 0.3);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .progress-bar {
+            background: linear-gradient(45deg, #667eea, #764ba2, #f093fb);
+            background-size: 300% 300%;
+            height: 100%;
+            border-radius: 12px;
+            transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            animation: progressFlow 3s linear infinite;
+            box-shadow: 0 0 20px rgba(102, 126, 234, 0.5);
+        }
+
+        @keyframes progressFlow {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        .progress-bar::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(
+                45deg,
+                rgba(255, 255, 255, 0.1) 25%,
+                transparent 25%,
+                transparent 50%,
+                rgba(255, 255, 255, 0.1) 50%,
+                rgba(255, 255, 255, 0.1) 75%,
+                transparent 75%
+            );
+            background-size: 20px 20px;
+            animation: moveStripes 1s linear infinite;
+        }
+
+        @keyframes moveStripes {
+            0% { background-position: 0 0; }
+            100% { background-position: 20px 0; }
+        }
+
+        /* Click effect particles */
+        .click-particle {
+            position: absolute;
+            width: 10px;
+            height: 10px;
+            background: linear-gradient(45deg, #ffd700, #ff6b6b);
+            border-radius: 50%;
+            pointer-events: none;
+            animation: particleExplode 0.8s ease-out forwards;
+        }
+
+        @keyframes particleExplode {
+            0% {
+                transform: scale(0) rotate(0deg);
+                opacity: 1;
+            }
+            100% {
+                transform: scale(1) rotate(360deg) translate(var(--dx), var(--dy));
+                opacity: 0;
+            }
+        }
+
+        /* Milestone alerts */
+        .milestone-alert {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            padding: 30px;
+            border-radius: 20px;
+            box-shadow: 
+                0 20px 40px rgba(0, 0, 0, 0.5),
+                0 0 50px rgba(102, 126, 234, 0.5);
+            z-index: 1000;
+            animation: milestoneAppear 0.5s ease-out forwards; /* Changed to forwards */
+            text-align: center;
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            opacity: 0; /* Start hidden */
+        }
+
+        @keyframes milestoneAppear {
+            0% {
+                transform: translate(-50%, -50%) scale(0) rotate(180deg);
+                opacity: 0;
+            }
+            100% {
+                transform: translate(-50%, -50%) scale(1) rotate(0deg);
+                opacity: 1;
+            }
+        }
+
+        /* New animation for fading out milestones */
+        @keyframes milestoneFadeOut {
+            0% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+            100% { opacity: 0; transform: translate(-50%, -50%) scale(0.8); }
+        }
+
+        .milestone-alert.hide {
+            animation: milestoneFadeOut 0.5s ease-out forwards;
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 640px) {
+            .game-container {
+                padding: 30px 20px;
+                margin: 10px;
+                width: calc(100% - 20px);
+            }
+            
+            .click-button {
+                padding: 15px 30px;
+                width: 100%;
+            }
+        }
+
+        /* Stats panel */
+        .stats-panel {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 15px;
+            padding: 20px;
+            margin-top: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .stat-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .stat-item:last-child {
+            border-bottom: none;
+        }
+    </style>
+</head>
+<body>
+    <!-- Animated background particles -->
+    <div class="bg-particles" id="particles"></div>
+
+    <div class="min-h-screen flex items-center justify-center p-4">
+        <div class="game-container">
+            <h1 class="title text-4xl md:text-6xl mb-6 leading-tight">
+                THE ULTIMATE CLICKER
+                <span class="block text-2xl md:text-4xl mt-2 font-bold bg-gradient-to-r from-pink-400 to-purple-500 bg-clip-text text-transparent">
+                    CHALLENGE
+                </span>
+            </h1>
+            
+            <p class="text-lg md:text-xl text-gray-300 mb-8 font-medium">
+                Click <span class="text-yellow-400 font-bold">10,000</span> times to unlock the secret ending...
+            </p>
+
+            <div class="mb-8">
+                <div id="click-count" class="click-counter mb-2">0</div>
+                <p class="text-sm text-gray-400 uppercase tracking-widest font-semibold">CLICKS</p>
+            </div>
+
+            <button id="click-button" class="click-button w-full mb-8">
+                CLICK ME!
+            </button>
+
+            <div class="mb-6">
+                <div class="progress-container mb-3">
+                    <div id="progress-bar" class="progress-bar" style="width: 0%"></div>
+                </div>
+                <p id="progress-text" class="text-sm text-gray-300 font-medium">Progress: 0.00%</p>
+            </div>
+
+            <div class="stats-panel">
+                <h3 class="text-lg font-bold mb-4 text-center text-purple-300">Statistics</h3>
+                <div class="stat-item">
+                    <span class="text-gray-300">Clicks per Second:</span>
+                    <span id="cps" class="text-yellow-400 font-bold">0.0</span>
+                </div>
+                <div class="stat-item">
+                    <span class="text-gray-300">Total Time:</span>
+                    <span id="total-time" class="text-blue-400 font-bold">00:00</span>
+                </div>
+                <div class="stat-item">
+                    <span class="text-gray-300">Remaining:</span>
+                    <span id="remaining" class="text-red-400 font-bold">10,000</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Game state
+        let clickCount = 0;
+        let startTime = Date.now();
+        let clickTimes = [];
+        const targetClicks = 10000;
+        const secretEndingUrl = 'https://www.youtube.com/watch?v=xvFZjo5PgG0&ab_channel=Duran';
+        const cookieName = 'clickerGameCount'; // Name for the cookie
+
+        // Milestones for celebration
+        const milestones = [100, 500, 1000, 2500, 5000, 7500, 9000, 9500, 9900];
+        const achievedMilestones = new Set();
+
+        // DOM elements
+        const clickCountElement = document.getElementById('click-count');
+        const clickButton = document.getElementById('click-button');
+        const progressBar = document.getElementById('progress-bar');
+        const progressText = document.getElementById('progress-text');
+        const cpsElement = document.getElementById('cps');
+        const totalTimeElement = document.getElementById('total-time');
+        const remainingElement = document.getElementById('remaining');
+
+        /**
+         * Sets a cookie with the given name, value, and expiration days.
+         * @param {string} name - The name of the cookie.
+         * @param {string} value - The value to store in the cookie.
+         * @param {number} days - The number of days until the cookie expires.
+         */
+        function setCookie(name, value, days) {
+            const date = new Date();
+            date.setTime(date.getTime() + (days * 24 * 60 * 60 * 1000));
+            const expires = "expires=" + date.toUTCString();
+            document.cookie = name + "=" + value + ";" + expires + ";path=/";
+        }
+
+        /**
+         * Gets the value of a cookie by its name.
+         * @param {string} name - The name of the cookie to retrieve.
+         * @returns {string | null} The cookie's value, or null if not found.
+         */
+        function getCookie(name) {
+            const nameEQ = name + "=";
+            const ca = document.cookie.split(';');
+            for(let i=0; i < ca.length; i++) {
+                let c = ca[i];
+                while (c.charAt(0) === ' ') c = c.substring(1, c.length);
+                if (c.indexOf(nameEQ) === 0) return c.substring(nameEQ.length, c.length);
+            }
+            return null;
+        }
+
+        // Initialize background particles
+        function createParticles() {
+            const particles = document.getElementById('particles');
+            for (let i = 0; i < 50; i++) {
+                const particle = document.createElement('div');
+                particle.className = 'particle';
+                particle.style.left = Math.random() * 100 + '%';
+                particle.style.top = Math.random() * 100 + '%';
+                particle.style.width = particle.style.height = (Math.random() * 4 + 2) + 'px';
+                particle.style.animationDelay = Math.random() * 6 + 's';
+                particle.style.animationDuration = (Math.random() * 4 + 4) + 's';
+                particles.appendChild(particle);
+            }
+        }
+
+        // Create click particles effect
+        function createClickParticles(x, y) {
+            for (let i = 0; i < 8; i++) {
+                const particle = document.createElement('div');
+                particle.className = 'click-particle';
+                particle.style.left = x + 'px';
+                particle.style.top = y + 'px';
+                
+                const angle = (i / 8) * Math.PI * 2;
+                const distance = 50 + Math.random() * 50;
+                const dx = Math.cos(angle) * distance;
+                const dy = Math.sin(angle) * distance;
+                
+                particle.style.setProperty('--dx', dx + 'px');
+                particle.style.setProperty('--dy', dy + 'px');
+                
+                document.body.appendChild(particle);
+                
+                setTimeout(() => particle.remove(), 800);
+            }
+        }
+
+        // Show milestone alert
+        function showMilestone(milestone) {
+            const alert = document.createElement('div');
+            alert.className = 'milestone-alert';
+            alert.innerHTML = `
+                <h2 class="text-3xl font-bold mb-2">🎉 MILESTONE!</h2>
+                <p class="text-xl">${milestone.toLocaleString()} clicks reached!</p>
+                <p class="text-sm text-gray-200 mt-2">Keep going, you're doing great!</p>
+            `;
+            document.body.appendChild(alert);
+            
+            // Set animation to appear, then after 5 seconds, add 'hide' class to fade out
+            setTimeout(() => {
+                alert.classList.add('hide'); // Add class to trigger fade out animation
+                // Remove the element completely after the fade out animation duration
+                alert.addEventListener('animationend', (e) => {
+                    if (e.animationName === 'milestoneFadeOut') {
+                        alert.remove();
+                    }
+                }, { once: true }); // Ensure the event listener is removed after first use
+            }, 5000); // Alert stays for 5 seconds, then fades out
+        }
+
+        // Update display
+        function updateDisplay() {
+            // Update click count with animation
+            clickCountElement.textContent = clickCount.toLocaleString();
+            clickCountElement.classList.add('animate');
+            setTimeout(() => clickCountElement.classList.remove('animate'), 300);
+
+            // Update progress
+            const progress = Math.min((clickCount / targetClicks) * 100, 100);
+            progressBar.style.width = progress + '%';
+            progressText.textContent = `Progress: ${progress.toFixed(2)}%`;
+
+            // Update remaining
+            remainingElement.textContent = Math.max(0, targetClicks - clickCount).toLocaleString();
+
+            // Update CPS
+            const now = Date.now();
+            clickTimes.push(now);
+            clickTimes = clickTimes.filter(time => now - time < 1000);
+            cpsElement.textContent = clickTimes.length.toFixed(1);
+
+            // Update total time
+            const elapsed = Math.floor((now - startTime) / 1000);
+            const minutes = Math.floor(elapsed / 60);
+            const seconds = elapsed % 60;
+            totalTimeElement.textContent = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+
+            // Check milestones
+            for (const milestone of milestones) {
+                if (clickCount >= milestone && !achievedMilestones.has(milestone)) {
+                    achievedMilestones.add(milestone);
+                    showMilestone(milestone);
+                }
+            }
+        }
+
+        // Handle click
+        function handleClick(event) {
+            if (clickCount >= targetClicks) return;
+
+            clickCount++;
+            setCookie(cookieName, clickCount, 30); // Save click count to cookie
+            updateDisplay();
+
+            // Create particle effect
+            const rect = clickButton.getBoundingClientRect();
+            const x = event.clientX; // Use event.clientX for click position
+            const y = event.clientY; // Use event.clientY for click position
+            createClickParticles(x, y);
+
+            // Check for completion
+            if (clickCount >= targetClicks) {
+                clickButton.disabled = true;
+                clickButton.textContent = '🎉 UNLOCKED! 🎉';
+                clickButton.classList.add('completed');
+
+                // Show final celebration
+                setTimeout(() => {
+                    const finalAlert = document.createElement('div');
+                    finalAlert.className = 'milestone-alert';
+                    finalAlert.innerHTML = `
+                        <h2 class="text-4xl font-bold mb-4">🏆 CONGRATULATIONS! 🏆</h2>
+                        <p class="text-xl mb-4">You've completed the Ultimate Clicker Challenge!</p>
+                        <p class="text-lg text-yellow-300">Redirecting to your reward...</p>
+                    `;
+                    document.body.appendChild(finalAlert);
+
+                    setTimeout(() => {
+                        try {
+                            window.location.href = secretEndingUrl;
+                        } catch (error) {
+                            console.error('Redirect failed:', error);
+                            // Provide a visual message box instead of alert()
+                            const errorMessage = document.createElement('div');
+                            errorMessage.className = 'fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center p-4 z-50';
+                            errorMessage.innerHTML = `
+                                <div class="bg-red-700 text-white p-6 rounded-lg shadow-xl text-center max-w-sm">
+                                    <h2 class="text-2xl font-bold mb-4">Error!</h2>
+                                    <p class="mb-4">Failed to open the secret ending. Please try visiting the link manually:</p>
+                                    <a href="${secretEndingUrl}" target="_blank" class="text-blue-200 underline break-all">${secretEndingUrl}</a>
+                                    <button class="mt-6 px-5 py-2 bg-red-800 rounded-md hover:bg-red-900 transition" onclick="this.parentElement.parentElement.remove()">
+                                        Close
+                                    </button>
+                                </div>
+                            `;
+                            document.body.appendChild(errorMessage);
+                        }
+                    }, 3000);
+                }, 1000);
+            }
+        }
+
+        // Initialize
+        createParticles();
+        clickButton.addEventListener('click', handleClick);
+        
+        // Load click count from cookie on initial load
+        const savedClickCount = getCookie(cookieName);
+        if (savedClickCount !== null) {
+            clickCount = parseInt(savedClickCount);
+            // If the game was already completed, disable the button and show completion state
+            if (clickCount >= targetClicks) {
+                clickButton.disabled = true;
+                clickButton.textContent = '🎉 UNLOCKED! 🎉';
+                clickButton.classList.add('completed');
+            }
+        }
+
+        // Update stats every second
+        setInterval(updateDisplay, 1000);
+        
+        // Initial display update
+        updateDisplay();
+    </script>
+</body>
+</html>
